@@ -1,0 +1,92 @@
+{
+    "produtos": [
+        {
+            "descricao": "TABUA - 3X25M - ROXINHO",
+            "vlr_m": 35.0
+        },
+        {
+            "descricao": "TABUA - 3X15M - ROXINHO",
+            "vlr_m": 25.0,
+            "vlr_frete": 0.0,
+            "vlr_seguro": 0.0
+        },
+        {
+            "descricao": "TABUA - 3X30M - ROXINHO",
+            "vlr_m": 40.0
+        }
+    ],
+    "clientes": [
+        {
+            "nome": "FELIPE",
+            "numero": "44998205264",
+            "cpf_cnpj": "07776143910",
+            "endereco": "RUA BAHIA, 204",
+            "cidade": "XAMBR\u00ca",
+            "telefone": "44998205264"
+        },
+        {
+            "nome": "AAA",
+            "numero": "333",
+            "cpf_cnpj": "333",
+            "endereco": "AAA",
+            "cidade": "AAA",
+            "telefone": "333"
+        },
+        {
+            "nome": "FLAVIO",
+            "numero": "333",
+            "cpf_cnpj": "333",
+            "endereco": "AAA",
+            "cidade": "AAA",
+            "telefone": "333"
+        },
+        {
+            "nome": "FERNANDO",
+            "numero": "333",
+            "cpf_cnpj": "333",
+            "endereco": "AAA",
+            "cidade": "AAA",
+            "telefone": "333"
+        },
+        {
+            "nome": "livia",
+            "numero": "9955454411",
+            "cpf_cnpj": "254564165",
+            "endereco": "rua bahia",
+            "cidade": "eliza",
+            "telefone": "5156314641"
+        },
+        {
+            "nome": "luiz de oliveira",
+            "numero": "44999254870",
+            "cpf_cnpj": "03241508842",
+            "endereco": "fazenda ouro verde",
+            "cidade": "nova jerusalem",
+            "telefone": "44999254990"
+        },
+        {
+            "nome": "Felipe S Souza",
+            "numero": "44998205264",
+            "cpf_cnpj": "07776143910",
+            "endereco": "Rua Bahia, 204",
+            "cidade": "Xambr\u00ea",
+            "telefone": "44998205264"
+        },
+        {
+            "nome": "FELIPE S Souza",
+            "numero": "44998205264",
+            "cpf_cnpj": "07776143910",
+            "endereco": "Rua Bahia, 204",
+            "cidade": "Xambr\u00ea",
+            "telefone": "44998205264"
+        },
+        {
+            "nome": "Servelhere",
+            "numero": "333",
+            "cpf_cnpj": "33",
+            "endereco": "33",
+            "cidade": "33",
+            "telefone": "33"
+        }
+    ]
+}
