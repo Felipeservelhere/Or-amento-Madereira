@@ -1,8 +1,25 @@
+import subprocess
 import sys
+
+# Function to install packages
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+# List of required packages
+required_packages = ['fpdf', 'PyQt5']
+
+# Check and install each package
+for package in required_packages:
+    try:
+        __import__(package)  # Try to import the package
+    except ImportError:
+        install(package)  # If not installed, install it
+
 import json
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore
 from fpdf import FPDF
+from datetime import datetime, timedelta
 
 class ProdutosDialog(QtWidgets.QDialog):
     def __init__(self, produtos, on_edit, on_delete):
@@ -125,7 +142,7 @@ class WelcomeScreen(QtWidgets.QWidget):
 
         # Logo
         logo_label = QtWidgets.QLabel(self.left_widget)
-        logo_pixmap = QtGui.QPixmap("Logo madereira.png")  # Replace with your logo path
+        logo_pixmap = QtGui.QPixmap("Imgs/Logo madereira.png")  # Replace with your logo path
         logo_label.setPixmap(logo_pixmap.scaled(400, 400, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))  # Scale logo
         logo_label.setAlignment(QtCore.Qt.AlignCenter)
         left_layout = QtWidgets.QVBoxLayout(self.left_widget)
@@ -140,13 +157,13 @@ class WelcomeScreen(QtWidgets.QWidget):
         button_layout.setAlignment(QtCore.Qt.AlignCenter)  # Center the buttons
 
         # Create buttons with hover effects
-        self.btn_clientes = self.create_button("Clientes", "Clientes.png", self.open_clientes)  # Replace with your icon path
+        self.btn_clientes = self.create_button("Clientes", "Imgs/Clientes.png", self.open_clientes)  # Replace with your icon path
         button_layout.addWidget(self.btn_clientes)
 
-        self.btn_produtos = self.create_button("Produtos", "Produtos.png", self.open_produtos)  # Replace with your icon path
+        self.btn_produtos = self.create_button("Produtos", "Imgs/Produtos.png", self.open_produtos)  # Replace with your icon path
         button_layout.addWidget(self.btn_produtos)
 
-        self.btn_orcamento = self.create_button("Orçamento", "Orçamento.png", self.open_orcamento)  # Replace with your icon path
+        self.btn_orcamento = self.create_button("Orçamento", "Imgs/Orçamento.png", self.open_orcamento)  # Replace with your icon path
         button_layout.addWidget(self.btn_orcamento)
 
         right_layout.addLayout(button_layout)  # Add button layout to right widget
@@ -482,7 +499,6 @@ class SistemaOrcamentoMadeireira(QtWidgets.QMainWindow):
         for cliente in self.clientes:
             if cliente["nome"] == client_name:
                 self.cliente_nome.setText(cliente["nome"])
-                self.cliente_numero.setText(cliente["numero"])
                 self.cliente_cpf.setText(cliente["cpf_cnpj"])
                 self.cliente_endereco.setText(cliente["endereco"])
                 self.cliente_cidade.setText(cliente["cidade"])
@@ -513,19 +529,17 @@ class SistemaOrcamentoMadeireira(QtWidgets.QMainWindow):
 
     def adicionar_cliente(self):
         nome = self.cliente_nome.text()
-        numero = self.cliente_numero.text()
         cpf = self.cliente_cpf.text()
         endereco = self.cliente_endereco.text()
         cidade = self.cliente_cidade.text()
         telefone = self.cliente_telefone.text()
 
-        if not nome or not numero or not cpf or not endereco or not cidade or not telefone:
+        if not nome or not cpf or not endereco or not cidade or not telefone:
             QtWidgets.QMessageBox.warning(self, "Erro", "Preencha todos os campos para adicionar um cliente!")
             return
 
         self.clientes.append({
             "nome": nome,
-            "numero": numero,
             "cpf_cnpj": cpf,
             "endereco": endereco,
             "cidade": cidade,
@@ -534,7 +548,6 @@ class SistemaOrcamentoMadeireira(QtWidgets.QMainWindow):
         
         self.atualizar_combobox_orcamento()
         self.cliente_nome.clear()
-        self.cliente_numero.clear()
         self.cliente_cpf.clear()
         self.cliente_endereco.clear()
         self.cliente_cidade.clear()
@@ -638,42 +651,43 @@ class SistemaOrcamentoMadeireira(QtWidgets.QMainWindow):
             cliente_telefone = cliente["telefone"]
 
             # Criar PDF
-            pdf = FPDF(orientation='L', unit='mm', format=(500, 350))  # Landscape orientation
+            pdf = FPDF(orientation='L', unit='mm', format='A4')  # Landscape orientation
             pdf.add_page()
-            pdf.set_font("Arial", size=10)
+            pdf.set_font("Arial", size=12)
 
             # Cabeçalho
-            pdf.set_font("Arial", style="B", size=12)
-            pdf.cell(0, 5, "TICKET DE VENDA", ln=True, align="C")
-            pdf.set_font("Arial", size=10)
-            pdf.cell(0, 5, "TIGELA MADEIRAS E ARTEFATOS LTDA", ln=True, align="C")
-            pdf.cell(0, 5, "TIGELA MADEIREIRA E ARTEFATOS", ln=True, align="C")
-            pdf.cell(0, 5, "Telefone: (44) 9754-8463 - Celular:", ln=True, align="C")
-            pdf.cell(0, 5, "Endereco: AVENIDA BRASIL, No 1621, DISTRITO CASA BRANCA, XAMBRE - PR", ln=True, align="C")
-            pdf.cell(0, 5, "CNPJ: 39.594.567/0001-79    IE: 9086731905", ln=True, align="C")
-            pdf.ln(5)
+            pdf.set_font("Arial", style="B", size=16)
+            pdf.cell(0, 10, "TICKET DE VENDA", ln=True, align="C")
+            pdf.set_font("Arial", size=12)
+            pdf.cell(0, 10, f"Nº Venda: Ticket_{len(self.orcamento_produtos) + 1}", ln=True, align="C")  # Incremental ticket number
+            pdf.cell(0, 10, f"Data: {datetime.now().strftime('%d/%m/%Y')}", ln=True, align="C")  # Current date
+
+            # Informações da empresa
+            pdf.cell(0, 10, "TIGELA MADEIRAS E ARTEFATOS LTDA", ln=True, align="C")
+            pdf.cell(0, 10, "TIGELA MADEIREIRA E ARTEFATOS", ln=True, align="C")
+            pdf.cell(0, 10, "Telefone: (44) 9754-8463 - Celular:", ln=True, align="C")
+            pdf.cell(0, 10, "CNPJ: 39.594.567/0001-79    IE: 9086731905", ln=True, align="C")
+            pdf.cell(0, 10, "Endereço: AVENIDA BRASIL, No 1621, DISTRITO CASA BRANCA, XAMBRE - PR", ln=True, align="C")
+            pdf.ln(10)  # Add a line break
 
             # Dados do cliente
-            pdf.set_font("Arial", style="", size=10)
-            pdf.cell(0, 5, f"Cliente: {cliente_nome}", ln=True)
-            pdf.cell(0, 5, f"Endereco: {cliente_endereco}", ln=True)
-            pdf.cell(0, 5, f"Cidade: {cliente_cidade}", ln=True)
-            pdf.cell(0, 5, f"CPF/CNPJ: {cliente_cpf}", ln=True)
-            pdf.cell(0, 5, f"Telefone: {cliente_telefone}", ln=True)
-            pdf.ln(5)
+            pdf.set_font("Arial", size=12)
+            pdf.cell(0, 10, f"Cliente: {cliente_nome} - Telefone: {cliente_telefone}", ln=True)
+            pdf.cell(0, 10, f"Endereço: {cliente_endereco} - CPF/CNPJ: {cliente_cpf}", ln=True)
+            pdf.cell(0, 10, f"Cidade: {cliente_cidade}", ln=True)
+            pdf.ln(5)  # Add a line break
 
             # Tabela de produtos
             pdf.set_fill_color(200, 200, 200)
-            pdf.cell(10, 7, txt="N\u00ba", border=1, align="C", fill=True)
-            pdf.cell(80, 7, txt="Produto", border=1, align="C", fill=True)
-            pdf.cell(30, 7, txt="Un. Com.", border=1, align="C", fill=True)  # Add "Un. Com." column
-            pdf.cell(30, 7, txt="Vlr. Frete", border=1, align="C", fill=True)
-            pdf.cell(30, 7, txt="Vlr. Outros", border=1, align="C", fill=True)
-            pdf.cell(30, 7, txt="Vlr. Seguro", border=1, align="C", fill=True)
-            pdf.cell(20, 7, txt="Qtd", border=1, align="C", fill=True)  # Quantity
-            pdf.cell(20, 7, txt="Vlr. M.", border=1, align="C", fill=True)  # Add "Vlr. M." column
-            pdf.cell(30, 7, txt="Vlr UN.", border=1, align="C", fill=True)  # Unit Price
-            pdf.cell(30, 7, txt="Vlr Total", border=1, align="C", fill=True)  # Total
+            pdf.cell(10, 10, "Nº", border=1, fill=True)
+            pdf.cell(80, 10, "Produto", border=1, fill=True)
+            pdf.cell(30, 10, "Un. Com.", border=1, fill=True)  # Add "Un. Com." column
+            pdf.cell(30, 10, "Vlr Frete", border=1, fill=True)
+            pdf.cell(30, 10, "Vlr Seguro", border=1, fill=True)
+            pdf.cell(20, 10, "Qtd", border=1, fill=True)  # Quantity
+            pdf.cell(20, 10, "Vlr M.", border=1, fill=True)  # Add "Vlr M." column
+            pdf.cell(30, 10, "Vlr UN.", border=1, fill=True)  # Unit Price
+            pdf.cell(30, 10, "Vlr Total", border=1, fill=True)  # Total
             pdf.ln()
 
             total_final = 0  # Initialize total
@@ -684,77 +698,54 @@ class SistemaOrcamentoMadeireira(QtWidgets.QMainWindow):
                 produto_tam = produto["tamanho"]
                 quantidade = produto["quantidade"]
                 vlr_m = next((p["vlr_m"] for p in self.produtos if p["descricao"] == produto_desc), 0)
+                vlr_frete = next((p["vlr_frete"] for p in self.produtos if p["descricao"] == produto_desc), 0)
+                vlr_seguro = next((p["vlr_seguro"] for p in self.produtos if p["descricao"] == produto_desc), 0)
                 vlr_un = vlr_m * float(produto_tam)  # Calculate unit price
                 total = int(quantidade) * vlr_un  # Calculate total based on quantity and unit price
 
                 # Preenchendo produtos com o novo formato
-                pdf.cell(10, 7, txt=str(index + 1), border=1, align="C")
-                pdf.cell(80, 7, txt=f"{produto_desc} - {produto_tam}M", border=1, align="L")  # Concatenate description and size
-                pdf.cell(30, 7, txt="UNID", border=1, align="C")  # Display "Un. Com."
-                pdf.cell(30, 7, txt="R$ 00,00", border=1, align="C")
-                pdf.cell(30, 7, txt="R$ 00,00", border=1, align="C")
-                pdf.cell(30, 7, txt="R$ 00,00", border=1, align="C")
-                pdf.cell(20, 7, txt=str(quantidade), border=1, align="C")  # Display quantity
-                pdf.cell(20, 7, txt=f"R$ {vlr_m:.2f}", border=1, align="C")  # Display value per meter
-                pdf.cell(30, 7, txt=f"R$ {vlr_un:.2f}", border=1, align="C")  # Display unit price
-                pdf.cell(30, 7, txt=f"R$ {total:.2f}", border=1, align="C")  # Display total
-                pdf.ln(10)
+                pdf.cell(10, 10, txt=str(index + 1), border=1, align="C")
+                pdf.cell(80, 10, txt=f"{produto_desc} - {produto_tam}M", border=1, align="L")  # Concatenate description and size
+                pdf.cell(30, 10, txt="UNID", border=1, align="C")  # Display "Un. Com."
+                pdf.cell(30, 10, txt=f"R$ {vlr_frete:.2f}", border=1, align="C")  # Display freight value
+                pdf.cell(30, 10, txt=f"R$ {vlr_seguro:.2f}", border=1, align="C")  # Display insurance value
+                pdf.cell(20, 10, txt=str(quantidade), border=1, align="C")  # Display quantity
+                pdf.cell(20, 10, txt=f"R$ {vlr_m:.2f}", border=1, align="C")  # Display value per meter
+                pdf.cell(30, 10, txt=f"R$ {total:.2f}", border=1, align="C")  # Display total
+                pdf.ln()
 
                 total_final += total  # Add to final total
 
             # Totais e informações adicionais
-            pdf.cell(17, 5, txt=f"Vendedor:", border=0, align="L")
-            pdf.cell(26, 5, txt="", border=0)# Espaço vazio
-            pdf.cell(30, 5, txt=f"{self.vendedor_entry.text()}", border=0, align="L")
-            pdf.cell(131, 5, txt="", border=0)# Espaço vazio
-            pdf.cell(30, 5, txt=f"Outros:", border=0, align="L")
-            pdf.cell(2, 5, txt="", border=0)# Espaço vazio
-            pdf.cell(30, 5, txt=f"R$ 00.00", border=0, align="L")
-            pdf.cell(30, 5, txt=f"Total:", border=0, align="L")  # Total at the end
-            pdf.cell(10, 5, txt=f"R$ {total_final:.2f}", border=0, align="L")
-            pdf.ln(6)
-            
-            pdf.cell(36, 5, txt=f"Forma de Pagamento:", border=0, align="L")
-            pdf.cell(7, 5, txt="", border=0)# Espaço vazio
-            pdf.cell(30, 5, txt=f"{self.forma_pagamento_entry.text()}", border=0, align="L")
-            pdf.cell(130, 5, txt="", border=0)# Espaço vazio
-            pdf.cell(30, 5, txt=f"Seguro:", border=0, align="L")
-            pdf.cell(30, 5, txt=f"R$ 00.00", border=0, align="L")
-            pdf.cell(30, 5, txt=f"Acréscimos", border=0, align="L")  # Total at the end
-            pdf.cell(10, 5, txt=f"R$ 00.00", border=0, align="L")
-            pdf.ln(6)
-            
-            pdf.cell(40, 5, txt=f"Condição de Pagamento:", border=0, align="L")
-            pdf.cell(3, 5, txt="", border=0)# Espaço vazio
-            pdf.cell(30, 5, txt=f"{self.condicao_pagamento_entry.text()}", border=0, align="L")
-            pdf.cell(130, 5, txt="", border=0)# Espaço vazio
-            pdf.cell(30, 5, txt=f"Frete:", border=0, align="L")
-            pdf.cell(30, 5, txt=f"R$ 00.00", border=0, align="L")
-            pdf.cell(30, 5, txt=f"Descontos", border=0, align="L")  # Total at the end
-            pdf.cell(10, 5, txt=f"R$ 00.00", border=0, align="L")
-            pdf.ln(6)
-            
-            pdf.cell(43, 5, txt=f"Limite de Crédito Utilizado:", border=0, align="L")
-            pdf.cell(30, 5, txt=f"R$ {self.limite_credito_utilizado_entry.text()}", border=0, align="L")
-            pdf.cell(191, 5, txt="", border=0)# Espaço vazio
-            pdf.cell(30, 5, txt=f"Total Líquido", border=0, align="L")  # Total at the end
-            pdf.cell(10, 5, txt=f"R$ 00.00", border=0, align="L")
-            pdf.ln(6)
-
-            
-            pdf.cell(43, 5, txt=f"Limite de Crédito Disponivel:", border=0, align="L")
-            pdf.cell(30, 5, txt=f"R$ {self.limite_credito_disponivel_entry.text()}", border=0, align="L")
-            pdf.ln(6)
-            
-            
-            # Observações
+            pdf.cell(150, 10, "Total: R$ {:.2f}".format(total_final), border=1)
             pdf.ln(10)
-            pdf.cell(0, 5, txt="Observacoes:", ln=True)
-            pdf.cell(0, 5, txt="- Voce pagou aproximadamente: R$ 00,00 de tributos estaduais.", ln=True)
-            pdf.cell(0, 5, txt="  R$ 00,00 de tributos federais. Fonte: IBPT.", ln=True)
+
+            # Seller and payment information
+            pdf.cell(0, 10, f"Vendedor: {self.vendedor_entry.text()}", ln=True)
+            pdf.cell(0, 10, f"Forma de Pagamento: {self.forma_pagamento_entry.text()}", ln=True)
+            pdf.cell(0, 10, f"Condição de Pagamento: {self.condicao_pagamento_entry.text()}", ln=True)
+            pdf.cell(0, 10, f"Limite Crédito Utilizado: R$ {self.limite_credito_utilizado_entry.text()}", ln=True)
+            pdf.cell(0, 10, f"Limite Crédito Disponível: R$ {self.limite_credito_disponivel_entry.text()}", ln=True)
+            pdf.ln(10)
+
+            # Vencimentos
+            pdf.cell(0, 10, "Vencimentos", ln=True, align="C")
+            pdf.cell(0, 10, "Data de Vencimento: {}".format((datetime.now() + timedelta(days=29)).strftime('%d/%m/%Y')), ln=True)
+            pdf.cell(0, 10, "Valor Total Líquido: R$ {:.2f}".format(total_final), ln=True)
+            pdf.ln(10)
+
+            # Signature lines
+            pdf.cell(0, 10, "Assinatura do Cliente: ______________________", ln=True)
+            pdf.cell(0, 10, "TIGELA MADEIRAS E ARTEFATOS LTDA", ln=True)
+            pdf.ln(10)
+
+            # Observations
+            pdf.cell(0, 10, "Observações:", ln=True)
+            pdf.cell(0, 10, "- Você pagou aproximadamente: R$ 472,50 de tributos estaduais.", ln=True)
+            pdf.cell(0, 10, "- R$ 907,88 de tributos federais. Fonte: IBPT.", ln=True)
 
             # Salvar PDF
-            nome_pdf = "Ticket_Venda_Exemplo.pdf"
+            nome_pdf = f"Ticket_Venda_{len(self.orcamento_produtos) + 1}.pdf"  # Incremental ticket number
             pdf.output(nome_pdf)
 
             # Abrir PDF automaticamente
