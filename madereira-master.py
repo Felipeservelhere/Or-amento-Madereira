@@ -1,8 +1,27 @@
+import subprocess
+import sys
+
+def install(package):
+    """Install a package using pip."""
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+# List of required packages
+required_packages = ['PyQt5', 'fpdf']
+
+# Check and install required packages
+for package in required_packages:
+    try:
+        __import__(package)
+    except ImportError:
+        print(f"Installing {package}...")
+        install(package)
+
 import sys
 import json
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore
 from fpdf import FPDF
+from datetime import datetime
 
 class ProdutosDialog(QtWidgets.QDialog):
     def __init__(self, produtos, on_edit, on_delete):
@@ -116,85 +135,80 @@ class WelcomeScreen(QtWidgets.QWidget):
         self.setWindowTitle("MADEREIRA CASA BRANCA")
         self.setGeometry(100, 100, 1000, 600)  # Increased window size
 
-        layout = QtWidgets.QHBoxLayout(self)  # Use horizontal layout
+        # Layout principal
+        layout = QtWidgets.QVBoxLayout(self)  # Layout vertical principal
 
-        # Left side for logo
-        self.left_widget = QtWidgets.QWidget()
-        self.left_widget.setStyleSheet("background-color: #52391f;")  # Brown color
-        layout.addWidget(self.left_widget)  # Add left widget to layout
+        # Parte superior: Imagem do logo
+        self.logo_label = QtWidgets.QLabel()
+        logo_pixmap = QtGui.QPixmap("Imgs/logo.png")  # Substitua pelo caminho correto da imagem
+        self.logo_label.setPixmap(logo_pixmap.scaledToHeight(200, QtCore.Qt.SmoothTransformation))  # Ajusta a altura
+        self.logo_label.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(self.logo_label, stretch=1)  # Adiciona a imagem com prioridade de espaço
 
-        # Logo
-        logo_label = QtWidgets.QLabel(self.left_widget)
-        logo_pixmap = QtGui.QPixmap("Imgs/Logo madereira.png")  # Replace with your logo path
-        logo_label.setPixmap(logo_pixmap.scaled(400, 400, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))  # Scale logo
-        logo_label.setAlignment(QtCore.Qt.AlignCenter)
-        left_layout = QtWidgets.QVBoxLayout(self.left_widget)
-        left_layout.addWidget(logo_label, alignment=QtCore.Qt.AlignCenter)  # Center the logo
+        # Parte inferior: Botões
+        button_layout = QtWidgets.QVBoxLayout()  # Layout vertical para os botões
 
-        # Right side for buttons
-        self.right_widget = QtWidgets.QWidget()
-        right_layout = QtWidgets.QVBoxLayout(self.right_widget)
-
-        # Centered button layout
-        button_layout = QtWidgets.QVBoxLayout()  # Use a vertical layout for buttons
-        button_layout.setAlignment(QtCore.Qt.AlignCenter)  # Center the buttons
-
-        # Create buttons with hover effects
-        self.btn_clientes = self.create_button("Clientes", "Imgs/Clientes.png", self.open_clientes)  # Replace with your icon path
+        # Criação dos botões com efeitos
+        self.btn_clientes = self.create_button("Clientes", "Imgs/cliente.png", self.open_clientes)
         button_layout.addWidget(self.btn_clientes)
 
-        self.btn_produtos = self.create_button("Produtos", "Imgs/Produtos.png", self.open_produtos)  # Replace with your icon path
+        self.btn_produtos = self.create_button("Produtos", "Imgs/Produtos.png", self.open_produtos)
         button_layout.addWidget(self.btn_produtos)
 
-        self.btn_orcamento = self.create_button("Orçamento", "Imgs/Orçamento.png", self.open_orcamento)  # Replace with your icon path
+        self.btn_orcamento = self.create_button("Orçamento", "Imgs/orcamento.png", self.open_orcamento)
         button_layout.addWidget(self.btn_orcamento)
 
-        right_layout.addLayout(button_layout)  # Add button layout to right widget
-        self.right_widget.setStyleSheet("background-color: white;")  # Set background color to white
-        layout.addWidget(self.right_widget)  # Add right widget to layout
+        # Adiciona o layout dos botões na parte inferior
+        button_widget = QtWidgets.QWidget()
+        button_widget.setLayout(button_layout)
+        button_widget.setStyleSheet("background-color: white;")  # Fundo branco para os botões
+        layout.addWidget(button_widget, stretch=2)  # Adiciona os botões com maior prioridade de espaço
+
+        # Define o layout principal
         self.setLayout(layout)
 
     def create_button(self, text, icon_path, callback):
-        """Create a button with an icon and hover effect."""
+        """Cria um botão com ícone e efeito de hover."""
         button = QtWidgets.QPushButton(text)
-        button.setIcon(QtGui.QIcon(icon_path))  # Set button icon
-        button.setIconSize(QtCore.QSize(50, 50))  # Set icon size
-        button.setStyleSheet("border: none; padding: 20px; background-color: white;")  # Remove border and increase padding
-        button.clicked.connect(callback)  # Connect button to function
-        button.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)  # Make button expand
-        button.setStyleSheet(self.button_hover_effect())  # Set hover effect
+        button.setIcon(QtGui.QIcon(icon_path))
+        button.setIconSize(QtCore.QSize(80, 80))  # Aumenta o tamanho do ícone
+        button.setFont(QtGui.QFont("Arial", 28))  # Aumenta o tamanho da fonte
+        button.setStyleSheet(self.button_hover_effect())
+        button.clicked.connect(callback)
+        button.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)  # Expande horizontalmente
         return button
 
     def button_hover_effect(self):
-        """Return the style sheet for button hover effect."""
+        """Retorna o estilo CSS para o efeito de hover dos botões."""
         return """
             QPushButton {
                 border: none;
-                padding: 20px;
+                padding: 20px;  /* Aumenta o padding para botões maiores */
+                font-size: 28px;  /* Tamanho da fonte */
                 background-color: white;
             }
             QPushButton:hover {
-                background-color: #e0e0e0;  /* Change color on hover */
+                background-color: #e0e0e0;  /* Cor ao passar o mouse */
             }
         """
 
     def open_clientes(self):
-        self.close()  # Close the welcome screen
         self.sistema_orcamento = SistemaOrcamentoMadeireira()
         self.sistema_orcamento.showMaximized()  # Open in maximized state
         self.sistema_orcamento.tabs.setCurrentIndex(1)  # Set to "Clientes" tab
+        self.close()  # Close the welcome screen
 
     def open_produtos(self):
-        self.close()  # Close the welcome screen
         self.sistema_orcamento = SistemaOrcamentoMadeireira()
         self.sistema_orcamento.showMaximized()  # Open in maximized state
         self.sistema_orcamento.tabs.setCurrentIndex(0)  # Set to "Produtos" tab
+        self.close()  # Close the welcome screen
 
     def open_orcamento(self):
-        self.close()  # Close the welcome screen
         self.sistema_orcamento = SistemaOrcamentoMadeireira()
         self.sistema_orcamento.showMaximized()  # Open in maximized state
         self.sistema_orcamento.tabs.setCurrentIndex(2)  # Set to "Orçamento" tab
+        self.close()  # Close the welcome screen
 
 class SistemaOrcamentoMadeireira(QtWidgets.QMainWindow):
     def __init__(self):
@@ -701,47 +715,53 @@ class SistemaOrcamentoMadeireira(QtWidgets.QMainWindow):
 
             # Totais e informações adicionais
             pdf.cell(17, 5, txt=f"Vendedor:", border=0, align="L")
-            pdf.cell(26, 5, txt="", border=0)# Espaço vazio
+            pdf.cell(29, 5, txt="", border=0)# Espaço vazio
             pdf.cell(30, 5, txt=f"{self.vendedor_entry.text()}", border=0, align="L")
-            pdf.cell(131, 5, txt="", border=0)# Espaço vazio
+            pdf.cell(130, 5, txt="", border=0)# Espaço vazio
             pdf.cell(30, 5, txt=f"Outros:", border=0, align="L")
-            pdf.cell(2, 5, txt="", border=0)# Espaço vazio
             pdf.cell(30, 5, txt=f"R$ 00.00", border=0, align="L")
             pdf.cell(30, 5, txt=f"Total:", border=0, align="L")  # Total at the end
             pdf.cell(10, 5, txt=f"R$ {total_final:.2f}", border=0, align="L")
             pdf.ln(6)
             
             pdf.cell(36, 5, txt=f"Forma de Pagamento:", border=0, align="L")
-            pdf.cell(7, 5, txt="", border=0)# Espaço vazio
+            pdf.cell(10, 5, txt="", border=0)# Espaço vazio
             pdf.cell(30, 5, txt=f"{self.forma_pagamento_entry.text()}", border=0, align="L")
             pdf.cell(130, 5, txt="", border=0)# Espaço vazio
             pdf.cell(30, 5, txt=f"Seguro:", border=0, align="L")
             pdf.cell(30, 5, txt=f"R$ 00.00", border=0, align="L")
-            pdf.cell(30, 5, txt=f"Acréscimos", border=0, align="L")  # Total at the end
-            pdf.cell(10, 5, txt=f"R$ 00.00", border=0, align="L")
-            pdf.ln(6)
-            
-            pdf.cell(40, 5, txt=f"Condição de Pagamento:", border=0, align="L")
-            pdf.cell(3, 5, txt="", border=0)# Espaço vazio
-            pdf.cell(30, 5, txt=f"{self.condicao_pagamento_entry.text()}", border=0, align="L")
-            pdf.cell(130, 5, txt="", border=0)# Espaço vazio
-            pdf.cell(30, 5, txt=f"Frete:", border=0, align="L")
-            pdf.cell(30, 5, txt=f"R$ 00.00", border=0, align="L")
-            pdf.cell(30, 5, txt=f"Descontos", border=0, align="L")  # Total at the end
+            pdf.cell(30, 5, txt=f"Acréscimos:", border=0, align="L")  # Total at the end
             pdf.cell(10, 5, txt=f"R$ 00.00", border=0, align="L")
             pdf.ln(6)
             
             pdf.cell(43, 5, txt=f"Limite de Crédito Utilizado:", border=0, align="L")
+            pdf.cell(3, 5, txt="", border=0)# Espaço vazio
             pdf.cell(30, 5, txt=f"R$ {self.limite_credito_utilizado_entry.text()}", border=0, align="L")
-            pdf.cell(191, 5, txt="", border=0)# Espaço vazio
-            pdf.cell(30, 5, txt=f"Total Líquido", border=0, align="L")  # Total at the end
+            pdf.cell(190, 5, txt="", border=0)# Espaço vazio
+            pdf.cell(30, 5, txt=f"Total Líquido:", border=0, align="L")  # Total at the end
             pdf.cell(10, 5, txt=f"R$ 00.00", border=0, align="L")
             pdf.ln(6)
 
             
             pdf.cell(43, 5, txt=f"Limite de Crédito Disponivel:", border=0, align="L")
+            pdf.cell(3, 5, txt="", border=0)# Espaço vazio
             pdf.cell(30, 5, txt=f"R$ {self.limite_credito_disponivel_entry.text()}", border=0, align="L")
             pdf.ln(6)
+            
+            pdf.set_font("Arial", style="B", size=10)
+            pdf.cell(40, 5, "Composição Pgto", border=0, align="L")
+            pdf.cell(30, 5, "Parcela", border=0, align="L")
+            pdf.cell(50, 5, "Numerário", border=0, align="L")
+            pdf.cell(30, 5, "Valor", border=0, align="L")
+            pdf.cell(30, 5, "Data Pgto", border=0, align="L")
+            pdf.ln()
+            
+            pdf.set_font("Arial", size=10)
+            pdf.cell(40, 5, "", border=0, align="L")  # Empty space for "Composição Pgto"
+            pdf.cell(30, 5, "1", border=0, align="L")  # Parcela
+            pdf.cell(50, 5, "Dinheiro", border=0, align="L")  # Numerário
+            pdf.cell(30, 5, f"R$ {total_final:.2f}", border=0, align="L")  # Valor
+            pdf.cell(30, 5, datetime.now().strftime("%d/%m/%Y"), border=0, align="L")
             
             
             # Observações

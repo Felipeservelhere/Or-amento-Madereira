@@ -13,6 +13,10 @@
         {
             "descricao": "TABUA - 3X30M - ROXINHO",
             "vlr_m": 40.0
+        },
+        {
+            "descricao": "Tabua - 3x40M-  Roxinho",
+            "vlr_m": 50.0
         }
     ],
     "clientes": [
@@ -94,6 +98,20 @@
             "endereco": "333",
             "cidade": "33",
             "telefone": "33"
+        },
+        {
+            "nome": "33",
+            "cpf_cnpj": "33",
+            "endereco": "33",
+            "cidade": "33",
+            "telefone": "33"
+        },
+        {
+            "nome": "Isabela",
+            "cpf_cnpj": "77788899910",
+            "endereco": "ee",
+            "cidade": "ee",
+            "telefone": "ee"
         }
     ]
 }
